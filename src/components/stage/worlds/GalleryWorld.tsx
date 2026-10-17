@@ -165,7 +165,7 @@ function Installation({ p, k, anchor }: { p: Project; k: number; anchor: (el: TH
 const KEYS = [
   [0, 7],
   [0.24, 2.2],
-  ...site.projects.map((_, k) => [0.31 + k * 0.17, FIRST_Z - k * SPACING + 3.4]),
+  ...site.projects.map((_, k) => [0.31 + k * 0.17, FIRST_Z - k * SPACING + 5.5]),
   [1, END_Z - 0.6],
 ] as [number, number][];
 
@@ -190,7 +190,7 @@ export default function GalleryWorld() {
   const endArch = useMemo(() => archGeometry(5, 6.2, 3, 5, 0.8), []);
   useDisposable([...Object.values(m), endArch]);
 
-  useActiveFrame(IDX, 40, 90, (state, dt) => {
+  useActiveFrame(IDX, 50, 90, (state, dt) => {
     const p = live.smooth[IDX];
     const k = s.current;
     const calm = getShared().reducedMotion;
@@ -200,7 +200,7 @@ export default function GalleryWorld() {
     let lean = 0;
     site.projects.forEach((_, i) => {
       const iz = FIRST_Z - i * SPACING;
-      const w = 1 - smoothstep(1.5, 5, Math.abs(z - 3.4 - iz));
+      const w = 1 - smoothstep(1.5, 5, Math.abs(z - 5.5 - iz));
       lean += (i % 2 ? 1 : -1) * w;
     });
     const toEnd = smoothstep(0.86, 1, p);
@@ -208,8 +208,8 @@ export default function GalleryWorld() {
     k.ox = damp(k.ox, calm ? 0 : live.pointerX * 0.25, 2.5, dt);
     k.oy = damp(k.oy, calm ? 0 : live.pointerY * 0.12, 2.5, dt);
     const cam = state.camera;
-    cam.position.set(k.lx * 0.5 + k.ox, 1.75 + k.oy, z);
-    k.look.set(k.lx * 2.0, 1.6, z - 5);
+    cam.position.set(k.lx * 0.4 + k.ox, 2.6 + k.oy, z);
+    k.look.set(k.lx * 1.8, 1.5, z - 6);
     cam.lookAt(k.look);
 
     anchors.current.forEach((a, i) => {

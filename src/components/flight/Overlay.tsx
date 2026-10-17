@@ -209,7 +209,7 @@ export function Overlay() {
 
         {overlay === "skills" && (
           <article>
-            <p className="cap text-[var(--gold-deep)]">{ch("reef").n} · {ch("reef").title}</p>
+            <p className="cap text-[var(--gold-deep)]">{ch("cavern").n} · {ch("cavern").title}</p>
             <h2 id="overlay-title" className="ov-title mt-1">Skills</h2>
             <div className="mt-6 grid gap-6 sm:grid-cols-2">
               {site.skills.map((g) => (

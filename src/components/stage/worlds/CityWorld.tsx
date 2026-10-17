@@ -306,6 +306,44 @@ function Clouds() {
   );
 }
 
+/** far-off islands so the wider view reads as a whole archipelago */
+function FarIslands() {
+  const m = useMemo(() => ({ grass: toon("#9CC97E"), rock: toon("#C9A27E"), wall: toon("#FBF6EC"), roof: toon("#E07A5F") }), []);
+  useDisposable(Object.values(m));
+  const list = useMemo(() => {
+    const r = rng(71);
+    return Array.from({ length: 9 }, (_, i) => {
+      const a = (i / 9) * Math.PI * 2 + r() * 0.4;
+      const d = 22 + r() * 18;
+      return { x: Math.cos(a) * d, y: -3 + r() * 6, z: Math.sin(a) * d, s: 0.8 + r() * 1.2, houses: 1 + Math.floor(r() * 3) };
+    });
+  }, []);
+  return (
+    <>
+      {list.map((it, i) => (
+        <group key={i} position={[it.x, it.y, it.z]} scale={it.s}>
+          <mesh position-y={0.1} material={m.grass}>
+            <cylinderGeometry args={[1.4, 1.38, 0.2, 20]} />
+          </mesh>
+          <mesh position-y={-0.9} rotation-x={Math.PI} material={m.rock}>
+            <coneGeometry args={[1.35, 1.8, 9]} />
+          </mesh>
+          {Array.from({ length: it.houses }, (_, k) => (
+            <group key={k} position={[(k - (it.houses - 1) / 2) * 0.7, 0.2, 0]}>
+              <mesh position-y={0.25} material={m.wall}>
+                <boxGeometry args={[0.45, 0.5, 0.4]} />
+              </mesh>
+              <mesh position-y={0.68} rotation-y={Math.PI / 4} material={m.roof}>
+                <coneGeometry args={[0.38, 0.36, 4]} />
+              </mesh>
+            </group>
+          ))}
+        </group>
+      ))}
+    </>
+  );
+}
+
 export default function CityWorld() {
     const v = useRef({ yaw: 0, pitch: 0, target: new THREE.Vector3() });
 
@@ -319,7 +357,7 @@ export default function CityWorld() {
     // emerge from the cloud bank → orbit → dive through the cloud sea
     const emerge = smoothstep(0, 0.18, p);
     const dive = smoothstep(0.78, 1, p);
-    const dist = THREE.MathUtils.lerp(24, 16, emerge) - dive * 6;
+    const dist = THREE.MathUtils.lerp(36, 25, emerge) - dive * 9;
     const yaw = 0.75 - p * 1.5 + s.yaw;
     const pitch = THREE.MathUtils.lerp(0.32, 1.25, dive) + s.pitch;
     s.target.set(0.6, THREE.MathUtils.lerp(0.4, -7, dive * dive), -0.8);
@@ -339,6 +377,7 @@ export default function CityWorld() {
       <Trees />
       <Landmarks />
       <Clouds />
+      <FarIslands />
     </>
   );
 }

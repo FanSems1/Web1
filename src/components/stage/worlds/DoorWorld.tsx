@@ -226,8 +226,8 @@ export default function DoorWorld() {
   const anim = useRef({ open: 0, ox: 0, oy: 0, offset: new THREE.Vector3(), knob: new THREE.Vector3(), gate: 1, look: new THREE.Vector3() });
   const flight = useFlight(
     [
-      [0, 1.75, 13.5],
-      [0, 1.7, 12],
+      [0, 2.9, 20],
+      [0, 2.6, 17],
       [0, 1.45, 6.5],
       [0, 1.42, 2.4],
       [0, 1.4, 0.15],
@@ -269,7 +269,7 @@ export default function DoorWorld() {
       const sway = calm ? 0 : Math.sin(t * 0.35);
       const cam = state.camera;
       const portrait = state.size.width < state.size.height;
-      cam.position.lerp(a.look.set(sway * 0.8, 1.35 + (calm ? 0 : Math.sin(t * 0.5) * 0.05), portrait ? 9.6 : 8.6), g);
+      cam.position.lerp(a.look.set(sway * 0.8, 1.35 + (calm ? 0 : Math.sin(t * 0.5) * 0.05), portrait ? 13.5 : 12), g);
       flight.look.getPointAt(camT(p), flight.tmp);
       flight.tmp.lerp(a.look.set(0, portrait ? 0.45 : 0.7, 0), g);
       cam.lookAt(flight.tmp);

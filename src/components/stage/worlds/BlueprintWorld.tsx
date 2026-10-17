@@ -276,8 +276,8 @@ export default function BlueprintWorld() {
 
     // arrive looking down at the sheet (0–.16) · hover over the drawing (.16–.76) · follow the plane
     const arrive = smoothstep(0, 0.16, p);
-    s.v.set(THREE.MathUtils.lerp(0, 0, arrive), THREE.MathUtils.lerp(9, 3.6, arrive), THREE.MathUtils.lerp(3, 5.4, arrive));
-    s.look.set(0, THREE.MathUtils.lerp(0, 1.4, arrive), THREE.MathUtils.lerp(-1, 0, arrive));
+    s.v.set(0, THREE.MathUtils.lerp(15, 7.6, arrive), THREE.MathUtils.lerp(6, 13.5, arrive));
+    s.look.set(0, THREE.MathUtils.lerp(0, 1.1, arrive), THREE.MathUtils.lerp(-1, -1.5, arrive));
     if (fly > 0) {
       const f = fly * fly * (3 - 2 * fly);
       s.v.lerp(s.flight.clone().add(new THREE.Vector3(0, 0.7, 3.2)), f);

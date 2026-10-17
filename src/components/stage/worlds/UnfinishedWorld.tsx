@@ -137,7 +137,7 @@ export default function UnfinishedWorld() {
     s.cx = damp(s.cx, calm ? 0 : live.pointerX * 0.45, 2.2, dt);
     s.cy = damp(s.cy, calm ? 0 : live.pointerY * 0.2, 2.2, dt);
     const mobile = frame.size.width < 768;
-    cam.position.set(1.6 + s.cx, THREE.MathUtils.lerp(2.2, mobile ? 3.4 : 2.9, settle) + s.cy, THREE.MathUtils.lerp(3, mobile ? 16 : 12.5, settle));
+    cam.position.set(1.6 + s.cx, THREE.MathUtils.lerp(2.2, mobile ? 5.2 : 4.4, settle) + s.cy, THREE.MathUtils.lerp(3, mobile ? 22 : 17.5, settle));
     cam.lookAt(1.4, THREE.MathUtils.lerp(1.6, mobile ? 0.6 : 1.3, settle), -1.6);
     cam.updateMatrixWorld();
 

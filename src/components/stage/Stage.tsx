@@ -15,13 +15,13 @@ const loaders: Record<ChapterId, Loader> = {
   door: () => import("./worlds/DoorWorld"),
   blueprint: () => import("./worlds/BlueprintWorld"),
   city: () => import("./worlds/CityWorld"),
-  reef: () => import("./worlds/ReefWorld"),
+  cavern: () => import("./worlds/CavernWorld"),
   observatory: () => import("./worlds/ObservatoryWorld"),
   gallery: () => import("./worlds/GalleryWorld"),
   unfinished: () => import("./worlds/UnfinishedWorld"),
 };
 
-/** the one shared light rig; the reef dims it and lights its lantern */
+/** the one shared light rig; the cavern lights its gem with the point light */
 export const rig: { ambient: THREE.AmbientLight | null; sun: THREE.DirectionalLight | null; lamp: THREE.PointLight | null } = {
   ambient: null,
   sun: null,
@@ -39,7 +39,11 @@ function WorldSlot({ index, children }: { index: number; children: ReactNode }) 
     return () => void (slots[index] = null);
   }, [index]);
   useFrame(() => {
-    if (!live.warming && group.current) group.current.visible = getShared().chapter === index;
+    if (live.warming || !group.current) return;
+    const on = getShared().chapter === index;
+    group.current.visible = on;
+    // hidden worlds skip three's per-frame matrix walk (it was 0.6s of a 20s scroll)
+    group.current.matrixWorldAutoUpdate = on;
   }, -1);
   return (
     <group ref={group} visible={index === 0}>
@@ -62,7 +66,7 @@ function Atmosphere() {
   }, []);
   useEffect(() => {
     const c = CHAPTERS[chapter];
-    live.night = 0;
+    live.glow = 0;
     if (lamp.current) lamp.current.intensity = 0;
     const { scene, gl } = get();
     scene.background = new THREE.Color(c.bg);
@@ -105,15 +109,37 @@ function Warmup() {
       }
     });
     const frame = () => new Promise((r) => requestAnimationFrame(r));
+    // render exactly like the ink renderer does — into an sRGB colour target and a
+    // linear normals target with the normal override — so every shader variant
+    // it will ever need is compiled here, not on first entry to a world
+    const rtColor = new THREE.WebGLRenderTarget(64, 64, { depthBuffer: true });
+    rtColor.texture.colorSpace = THREE.SRGBColorSpace;
+    const rtNormal = new THREE.WebGLRenderTarget(64, 64, { depthBuffer: true });
+    const normalMat = new THREE.MeshNormalMaterial();
+    const renderBoth = () => {
+      gl.setRenderTarget(rtColor);
+      gl.render(scene, camera);
+      scene.overrideMaterial = normalMat;
+      gl.setRenderTarget(rtNormal);
+      gl.render(scene, camera);
+      scene.overrideMaterial = null;
+      gl.setRenderTarget(null);
+    };
     (async () => {
+      gl.setRenderTarget(rtColor);
       await gl.compileAsync(scene, camera).catch(() => undefined);
+      gl.setRenderTarget(null);
       setShared({ warmSteps: 1 });
       for (let i = 0; i < slots.length && alive; i++) {
-        slots.forEach((g, k) => g && (g.visible = k === i));
+        slots.forEach((g, k) => g && ((g.visible = k === i), (g.matrixWorldAutoUpdate = true)));
+        renderBoth();
         gl.render(scene, camera);
         await frame();
         setShared({ warmSteps: 2 + i });
       }
+      rtColor.dispose();
+      rtNormal.dispose();
+      normalMat.dispose();
       culled.forEach((o) => (o.frustumCulled = true));
       live.warming = false;
       slots.forEach((g, k) => g && (g.visible = k === getShared().chapter));
@@ -168,6 +194,8 @@ export default function Stage() {
             gl.setClearColor(CHAPTERS[0].bg);
             gl.debug.checkShaderErrors = process.env.NODE_ENV !== "production";
             stageApi.invalidate = () => invalidate();
+            // ?debug exposes renderer stats for performance checks
+            if (location.search.includes("debug")) (window as unknown as { __gl: THREE.WebGLRenderer }).__gl = gl;
             gl.domElement.addEventListener("webglcontextlost", (e) => {
               e.preventDefault();
               setShared({ webgl: false });

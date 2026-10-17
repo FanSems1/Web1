@@ -93,8 +93,10 @@ export function Gate() {
       : (fonts ? 1 : 0) + (stageLoaded ? 1 : 0) + worldsBuilt + warmSteps;
   const target = Math.min(1, done / TOTAL);
 
-  // the drawing follows real progress, never ahead of it, at a readable pace
+  // the drawing follows real progress, never ahead of it, at a readable pace.
+  // stops for good once the visitor is in (it re-rendered every frame before)
   useEffect(() => {
+    if (entered) return;
     let raf = 0;
     let last = performance.now();
     let boilAt = 0;
@@ -110,7 +112,7 @@ export function Gate() {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [target]);
+  }, [target, entered]);
 
   const ready = shown >= 0.999 && fonts && (webgl === false || warmed);
   const with3d = ready && webgl === true;

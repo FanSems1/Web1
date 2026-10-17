@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 import * as THREE from "three";
 import { getShared, live } from "@/lib/experience";
 
-const NIGHT_INK = new THREE.Color("#9FF0FF");
+const GLOW_INK = new THREE.Color("#FFD9FF");
 
 /** objects on this layer render in colour but never get ink lines (sky, glows, shadows) */
 export const FX_LAYER = 2;
@@ -180,8 +180,8 @@ export function InkRenderer({ ink = "#1D2624", scale = 1 }: { ink?: string; scal
       // keep the line roughly 1.35 CSS px wide regardless of DPR
       u.uLine.value = Math.max(1, viewport.dpr * scale * 1.35);
     }
-    // at night the reef's ink turns to glowing light lines
-    u.uInk.value.set(ink).lerp(NIGHT_INK, live.night);
+    // while the crystals resonate the ink turns to glowing light lines
+    u.uInk.value.set(ink).lerp(GLOW_INK, live.glow);
     const cam = camera as THREE.PerspectiveCamera;
     u.uNear.value = cam.near;
     u.uFar.value = cam.far;
@@ -206,7 +206,11 @@ export function InkRenderer({ ink = "#1D2624", scale = 1 }: { ink?: string; scal
     gl.setClearColor(0x7f7fff, 1);
     gl.setRenderTarget(res.normal);
     gl.clear();
+    // matrices were already updated by the colour pass this frame
+    const auto = scene.matrixWorldAutoUpdate;
+    scene.matrixWorldAutoUpdate = false;
     gl.render(scene, camera);
+    scene.matrixWorldAutoUpdate = auto;
     scene.overrideMaterial = null;
     scene.background = bg;
     camera.layers.enable(FX_LAYER);

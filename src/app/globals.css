@@ -24,34 +24,17 @@ html[data-chapter="city"] {
   --ink-soft: #2f4350;
   --bg: #a9cbdc;
 }
-html[data-chapter="reef"] {
-  --ink: #0e2530;
-  --ink-soft: #1f3f4c;
-  --bg: #5fafc4;
-  --gold-deep: #4a3408;
-}
-/* the reef's night dive: dark paper, glowing ink */
-html[data-chapter="reef"][data-night="true"] {
-  --ink: #c9f6ff;
-  --ink-soft: #8fd3e2;
-  --paper: #0e2638;
-  --gold-deep: #ffd36b;
-}
-html[data-chapter="reef"][data-night="true"] .ink-btn {
-  color: #0e2530;
-}
-html[data-chapter="reef"] :is(.say, .cap, .tag-card, .ink-btn, .ink-icon, .hud-chapter, .hud-calm, .hud-index) {
-  transition:
-    color 500ms var(--ease-out),
-    background-color 500ms var(--ease-out),
-    border-color 500ms var(--ease-out);
-}
-
 /* dark worlds: light ink on dark paper */
 html[data-chapter="blueprint"] {
   --ink: #e6f0ff;
   --ink-soft: #b9cdf0;
   --paper: #1b3866;
+  --gold-deep: #f2c14e;
+}
+html[data-chapter="cavern"] {
+  --ink: #f1e6ff;
+  --ink-soft: #cdb8f0;
+  --paper: #2e2052;
   --gold-deep: #f2c14e;
 }
 html[data-chapter="observatory"] {
@@ -60,7 +43,7 @@ html[data-chapter="observatory"] {
   --paper: #262e63;
   --gold-deep: #f2c14e;
 }
-html:is([data-chapter="blueprint"], [data-chapter="observatory"]) .ink-btn {
+html:is([data-chapter="blueprint"], [data-chapter="cavern"], [data-chapter="observatory"]) .ink-btn {
   color: #1b2340;
 }
 
@@ -214,8 +197,10 @@ html[data-chapter="city"] canvas {
   paint-order: stroke fill;
   text-shadow: 0.05em 0.06em 0 var(--ink);
 }
-.shard {
-  will-change: transform, opacity;
+/* no per-strip will-change: hundreds of strips each forcing a GPU layer
+   caused 50–80ms frames whenever a title appeared */
+.shard-title {
+  contain: layout style;
 }
 
 /* ---------- small ink components ---------- */

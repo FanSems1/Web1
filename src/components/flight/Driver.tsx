@@ -63,8 +63,24 @@ export function Driver() {
     };
     document.addEventListener("focusin", onFocus);
 
+    // read the scroll position in the scroll event, never inside the frame loop:
+    // reading scrollY after this loop's style writes forced a full synchronous layout
+    let scrollPos = scrollY;
+    const onScroll = () => (scrollPos = scrollY);
+    addEventListener("scroll", onScroll, { passive: true });
+
+    // write a style only when it actually changes
+    const cache = new WeakMap<HTMLElement, Record<string, string>>();
+    const put = (el: HTMLElement, prop: "opacity" | "visibility" | "transform", v: string) => {
+      let c = cache.get(el);
+      if (!c) cache.set(el, (c = {}));
+      if (c[prop] === v) return;
+      c[prop] = v;
+      el.style[prop] = v;
+    };
+
     const rawG = () => {
-      const y = scrollY;
+      const y = scrollPos;
       for (let i = CHAPTERS.length - 1; i >= 0; i--) {
         if (y >= spans[i].top || i === 0) return i + Math.min(1, Math.max(0, (y - spans[i].top) / spans[i].span));
       }
@@ -72,6 +88,10 @@ export function Driver() {
     };
 
     live.g = rawG();
+    // the cover's own state: it snaps on instantly (to hide a swap) but always
+    // releases over ~300ms, and its colour blends, so fast scrolling never strobes
+    const hex = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+    const cover = { op: 1, rgb: hex(CHAPTERS[0].bg) };
     let last = performance.now();
     let raf = 0;
     const tick = (now: number) => {
@@ -89,7 +109,8 @@ export function Driver() {
         live.progress[i] = Math.min(1, Math.max(0, raw - i));
       }
       const idx = Math.min(n - 1, Math.floor(g));
-      if (idx !== chapter) setShared({ chapter: idx });
+      const swapped = idx !== chapter;
+      if (swapped) setShared({ chapter: idx });
 
       // colour wipe: fully covers the screen whenever the world is swapping
       const f = g - idx;
@@ -105,9 +126,19 @@ export function Driver() {
         op = 1;
         color = CHAPTERS[idx].bg;
       }
+      // a swap is always hidden, even if one frame jumped straight past the cover window
+      if (swapped) op = 1;
+      cover.op = op >= cover.op ? op : damp(cover.op, op, 7, dt);
+      const tgt = hex(color);
+      // colour follows quickly while covered, so passing several worlds blends instead of stepping
+      cover.rgb = cover.rgb.map((c, i) => (cover.op < 0.05 ? tgt[i] : damp(c, tgt[i], 10, dt)));
       if (wipe.current) {
-        wipe.current.style.opacity = op.toFixed(3);
-        wipe.current.style.backgroundColor = color;
+        put(wipe.current, "opacity", cover.op.toFixed(3));
+        const bgc = `rgb(${cover.rgb.map((c) => Math.round(c)).join(",")})`;
+        if (wipe.current.dataset.bg !== bgc) {
+          wipe.current.dataset.bg = bgc;
+          wipe.current.style.backgroundColor = bgc;
+        }
       }
 
       for (const b of beats) {
@@ -118,11 +149,11 @@ export function Driver() {
         if (b.anchor) {
           const a = live.anchors.get(b.anchor);
           if (!a || !a.visible) v = 0;
-          else transform = `translate3d(${a.x.toFixed(1)}px, ${a.y.toFixed(1)}px, 0)`;
-          b.el.style.transform = transform;
+          else transform = `translate3d(${a.x.toFixed(0)}px, ${a.y.toFixed(0)}px, 0)`;
+          if (v > 0) put(b.el, "transform", transform);
         }
-        b.el.style.opacity = v.toFixed(3);
-        b.el.style.visibility = v < 0.01 ? "hidden" : "visible";
+        put(b.el, "opacity", v.toFixed(2));
+        put(b.el, "visibility", v < 0.01 ? "hidden" : "visible");
         const on = v > 0.5;
         if (on !== b.on) {
           b.on = on;
@@ -135,7 +166,7 @@ export function Driver() {
         const [a, b, c, d] = parseWin(t.dataset.win);
         const p = live.smooth[ch];
         const visible = ch === idx && p > a - 0.001 && p < d;
-        t.style.visibility = visible ? "visible" : "hidden";
+        put(t, "visibility", visible ? "visible" : "hidden");
         if (visible) {
           t.dataset.phase = p < b ? "in" : p < c ? "hold" : "out";
         }
@@ -147,15 +178,15 @@ export function Driver() {
         const k = 1 - smoothstep(a, b, p); // still scattered
         const o = smoothstep(c, d, p); // tearing away
         if (reducedMotion) {
-          s.el.style.transform = "none";
-          s.el.style.opacity = (1 - Math.max(k, o)).toFixed(3);
+          put(s.el, "transform", "none");
+          put(s.el, "opacity", (1 - Math.max(k, o)).toFixed(2));
           continue;
         }
         const x = s.from[0] * k + s.to[0] * o;
         const y = s.from[1] * k + s.to[1] * o;
         const r = s.from[2] * k + s.to[2] * o;
-        s.el.style.transform = `translate3d(${x.toFixed(1)}em, ${y.toFixed(1)}em, 0) rotate(${r.toFixed(1)}deg)`;
-        s.el.style.opacity = (1 - Math.max(k * 1.1, o * 1.2)).toFixed(3);
+        put(s.el, "transform", k === 0 && o === 0 ? "none" : `translate3d(${x.toFixed(2)}em, ${y.toFixed(2)}em, 0) rotate(${r.toFixed(1)}deg)`);
+        put(s.el, "opacity", Math.max(0, 1 - Math.max(k * 1.1, o * 1.2)).toFixed(2));
       }
 
       raf = requestAnimationFrame(tick);
@@ -163,6 +194,7 @@ export function Driver() {
     raf = requestAnimationFrame(tick);
     return () => {
       cancelAnimationFrame(raf);
+      removeEventListener("scroll", onScroll);
       removeEventListener("resize", onResize);
       document.removeEventListener("focusin", onFocus);
     };

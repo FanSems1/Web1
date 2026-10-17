@@ -17,9 +17,9 @@ export const live = {
   /** drag-to-explore target angles (radians) */
   cityYaw: 0,
   cityPitch: 0,
-  /** 0..1 target reef "power" (lantern) while holding, and its eased value */
-  reefTarget: 0,
-  reefPower: 0,
+  /** 0..1 crystal resonance while holding, and its eased value */
+  resonanceTarget: 0,
+  resonance: 0,
   /** hovered gallery installation (-1 none) */
   hover: -1,
   /** normalised pointer (-1..1) */
@@ -35,8 +35,8 @@ export const live = {
   drawDone: false,
   /** observatory: telescope aim offset from dragging (radians) */
   scopeYaw: 0,
-  /** 0..1 "night dive" darkness in the reef (also flips the ink to glowing lines) */
-  night: 0,
+  /** 0..1 how much the ink lines glow (crystal resonance turns them to light) */
+  glow: 0,
   /** true while the loader renders every world once off-screen */
   warming: false,
   /** damped global position along the whole flight, 0..CHAPTERS.length */

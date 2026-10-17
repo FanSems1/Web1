@@ -13,7 +13,7 @@ const C = {
   door: ci("door"),
   blueprint: ci("blueprint"),
   city: ci("city"),
-  reef: ci("reef"),
+  cavern: ci("cavern"),
   observatory: ci("observatory"),
   gallery: ci("gallery"),
   unfinished: ci("unfinished"),
@@ -62,15 +62,15 @@ function Say({ text, className = "" }: { text: string; className?: string }) {
   );
 }
 
-function ReefHold() {
+function ResonateHold() {
   return (
     <HoldButton
       variant="ring"
-      label="Hold to go dark"
-      hint="Press and hold: the sea goes dark, the reef glows and creatures of the deep appear. Purely decorative."
+      label="Hold to resonate"
+      hint="Press and hold: the crystals hum, light leaps between them and the great gem opens. Purely decorative."
       duration={1.5}
       onProgress={(p) => {
-        live.reefTarget = p;
+        live.resonanceTarget = p;
         stageApi.invalidate();
       }}
       icon={
@@ -227,10 +227,10 @@ export function Chapters() {
         </Beat>
       </Section>
 
-      {/* 04 — THE CORAL DEEP · skills */}
-      <Section i={C.reef}>
-        <ShardTitle ch={C.reef} id="title-reef" win={[0.04, 0.12, 0.24, 0.34]} lines={["THE CORAL", "DEEP"]} className="top-[34%] text-[clamp(2.6rem,8.5vw,8rem)]" />
-        <Beat ch={C.reef} win={[0.3, 0.36, 0.8, 0.86]} className="corner-tl">
+      {/* 04 — THE CRYSTAL CAVERN · skills */}
+      <Section i={C.cavern}>
+        <ShardTitle ch={C.cavern} id="title-cavern" win={[0.04, 0.12, 0.24, 0.34]} lines={["THE CRYSTAL", "CAVERN"]} className="top-[34%] text-[clamp(2.6rem,8.5vw,8rem)]" />
+        <Beat ch={C.cavern} win={[0.3, 0.36, 0.8, 0.86]} className="corner-tl">
           <h3 className="cap mb-2 text-[var(--gold-deep)]">Skills</h3>
           <p className="say-lg">
             <Say text="What I build with." />
@@ -240,7 +240,7 @@ export function Chapters() {
           </button>
         </Beat>
         {site.skills.map((g, k) => (
-          <Beat key={g.id} ch={C.reef} anchor={`skill-${k}`} win={[0.32 + k * 0.03, 0.4 + k * 0.03, 0.76, 0.82]} className="desktop-only">
+          <Beat key={g.id} ch={C.cavern} anchor={`skill-${k}`} win={[0.32 + k * 0.03, 0.4 + k * 0.03, 0.76, 0.82]} className="desktop-only">
             <div className="anchor-offset -translate-x-1/2 -translate-y-[calc(100%+18px)]">
               <div className="tag-card w-max max-w-[15rem]">
                 <p className="cap">{g.title}</p>
@@ -249,20 +249,19 @@ export function Chapters() {
             </div>
           </Beat>
         ))}
-        <Beat ch={C.reef} win={[0.32, 0.38, 0.76, 0.82]} className="corner-bl mobile-only">
+        <Beat ch={C.cavern} win={[0.32, 0.38, 0.76, 0.82]} className="corner-bl mobile-only">
           <div className="tag-card flex items-center gap-3">
             <ul className="flex flex-1 flex-wrap gap-1.5">
               {site.skills.map((g) => (
                 <li key={g.id} className="chip">{g.title}</li>
               ))}
             </ul>
-            <ReefHold />
+            <ResonateHold />
           </div>
         </Beat>
-        <Beat ch={C.reef} anchor="reef-hold" win={[0.32, 0.38, 0.76, 0.82]} className="desktop-only">
-          <div className="anchor-offset -translate-x-1/2 -translate-y-1/2">
-            <ReefHold />
-          </div>
+        {/* fixed on screen so it never drifts with the camera */}
+        <Beat ch={C.cavern} win={[0.32, 0.38, 0.76, 0.82]} className="corner-br desktop-only">
+          <ResonateHold />
         </Beat>
       </Section>
 
@@ -370,9 +369,12 @@ export function Chapters() {
               </li>
             ))}
           </ul>
-          <button type="button" className="ink-btn mt-4 md:hidden" onClick={() => scrollToChapter(C.door, 0)}>
-            Back to the first door
-          </button>
+          {/* wrapper carries md:hidden: .ink-btn's display would override it */}
+          <div className="mt-4 md:hidden">
+            <button type="button" className="ink-btn" onClick={() => scrollToChapter(C.door, 0)}>
+              Back to the first door
+            </button>
+          </div>
         </Beat>
         <Beat ch={C.unfinished} win={[0.3, 0.42, 1.1, 1.2]} className="corner-br hidden text-right md:block">
           <p className="cap hidden md:block" aria-hidden="true">

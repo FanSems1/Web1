@@ -28,7 +28,8 @@ export function Hud() {
   useEffect(() => {
     let raf = 0;
     const loop = () => {
-      if (bar.current) bar.current.style.transform = `scaleX(${(live.g / CHAPTERS.length).toFixed(4)})`;
+      const v = `scaleX(${(live.g / CHAPTERS.length).toFixed(3)})`;
+      if (bar.current && bar.current.style.transform !== v) bar.current.style.transform = v;
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);

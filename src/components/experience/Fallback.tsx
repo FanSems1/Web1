@@ -2,7 +2,6 @@
 
 import { CHAPTERS } from "@/lib/chapters";
 import { useShared } from "@/lib/experience";
-import { gearPath } from "@/lib/gear";
 
 /**
  * Illustrated backdrops used when WebGL is unavailable or the context is
@@ -60,14 +59,8 @@ export function Fallback() {
           ))}
         </svg>
       )}
-      {world === "reef" && (
-        <svg className="absolute inset-0 size-full" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice">
-          <rect width="1600" height="900" fill="#5FAFC4" />
-          <rect y="700" width="1600" height="200" fill="#E8D4A8" />
-          <path d={gearPath(1120, 420, 18, 180, 158, 50)} fill="#C9A36A" fillRule="evenodd" />
-          <path d={gearPath(1370, 560, 12, 120, 104, 34)} fill="#B87D5B" fillRule="evenodd" />
-          <path d={gearPath(900, 560, 10, 100, 86, 28)} fill="#9DB8B0" fillRule="evenodd" />
-        </svg>
+      {world === "cavern" && (
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_60%_55%,#5b3f99,#24183F_65%)]" />
       )}
       {(world === "gallery" || world === "unfinished") && (
         <div className="absolute inset-0 bg-[#FBF8F2]">

@@ -15,7 +15,8 @@ const ENTRIES = read(site.experience);
 const N = ENTRIES.length;
 /** each journey entry is a constellation, spread across the sky */
 const AZ = Array.from({ length: N }, (_, i) => (N === 1 ? 0 : -0.95 + (1.9 * i) / (N - 1)));
-const ELEV = 0.42;
+// low in the sky, so the constellations sit above the telescope, not at the top edge
+const ELEV = 0.22;
 const PIVOT = new THREE.Vector3(0, 1.55, 0);
 const SKY_R = 36;
 
@@ -27,7 +28,7 @@ export function aimAt(p: number) {
 }
 
 function Hill() {
-  const m = useMemo(() => ({ hill: toon("#2E3A6E"), grass: toon("#3B4C82"), rock: toon("#4A5A8C") }), []);
+  const m = useMemo(() => ({ hill: toon("#3D4C8C"), grass: toon("#5163A6"), rock: toon("#6475B0") }), []);
   useDisposable(Object.values(m));
   const tufts = useMemo(() => {
     const r = rng(14);
@@ -135,7 +136,7 @@ function Sky({ active }: { active: React.RefObject<number[]> }) {
   const groups = useMemo(() => {
     const r = rng(8);
     return AZ.map((az, k) => {
-      const centre = dirOf(az, ELEV + (k % 2 ? 0.12 : -0.04)).multiplyScalar(SKY_R);
+      const centre = dirOf(az, ELEV + (k % 2 ? 0.07 : 0)).multiplyScalar(SKY_R);
       const right = new THREE.Vector3(Math.cos(az), 0, Math.sin(az));
       const up = new THREE.Vector3(0, 1, 0);
       const pts = Array.from({ length: 6 }, (_, i) => {
@@ -191,7 +192,7 @@ export default function ObservatoryWorld() {
   useAnchorCleanup(names);
   const tube = useRef<THREE.Group>(null);
   const active = useRef<number[]>(AZ.map(() => 0));
-  const centres = useMemo(() => AZ.map((az, k) => dirOf(az, ELEV + (k % 2 ? 0.12 : -0.04)).multiplyScalar(SKY_R)), []);
+  const centres = useMemo(() => AZ.map((az, k) => dirOf(az, ELEV + (k % 2 ? 0.07 : 0)).multiplyScalar(SKY_R)), []);
   const s = useRef({ aim: AZ[0], v: new THREE.Vector3(), look: new THREE.Vector3(), axis: new THREE.Vector3(), ox: 0, oy: 0 });
 
   useActiveFrame(IDX, 42, 120, (state, dt) => {
@@ -215,8 +216,8 @@ export default function ObservatoryWorld() {
     const exit = smoothstep(0.86, 1, p);
     const behind = new THREE.Vector3(-k.axis.x, 0, -k.axis.z).normalize();
     // stand back and a little above, so hill, telescope and observatory frame the lower third
-    k.v.copy(PIVOT).addScaledVector(behind, THREE.MathUtils.lerp(3, 7.5, arrive)).add(new THREE.Vector3(0, THREE.MathUtils.lerp(0.5, 1.1, arrive), 0));
-    k.look.copy(PIVOT).addScaledVector(behind, -18).add(new THREE.Vector3(0, THREE.MathUtils.lerp(16, 5.2, arrive), 0));
+    k.v.copy(PIVOT).addScaledVector(behind, THREE.MathUtils.lerp(4, 11.5, arrive)).add(new THREE.Vector3(0, THREE.MathUtils.lerp(0.8, 2.3, arrive), 0));
+    k.look.copy(PIVOT).addScaledVector(behind, -18).add(new THREE.Vector3(0, THREE.MathUtils.lerp(16, 3.6, arrive), 0));
     if (exit > 0) {
       const lens = PIVOT.clone().addScaledVector(k.axis, 1.55);
       const eye = PIVOT.clone().addScaledVector(k.axis, -1.6).add(new THREE.Vector3(0, 0.05, 0));
